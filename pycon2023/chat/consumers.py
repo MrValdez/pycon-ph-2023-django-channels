@@ -1,26 +1,25 @@
 import json
 
-from channels.generic.websocket import JsonWebsocketConsumer
-from asgiref.sync import async_to_sync
+from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
 
-class ChatConsumer(JsonWebsocketConsumer):
-    def connect(self):
+class ChatConsumer(AsyncJsonWebsocketConsumer):
+    async def connect(self):
         self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
         self.room_name = self.clean_group_name(self.room_name)
 
         self.room_group_name = f"chat_{self.room_name}"
         
         args = (self.room_group_name, self.channel_name,)
-        async_to_sync(self.channel_layer.group_add)(*args)
+        await self.channel_layer.group_add(*args)
 
-        self.accept()
+        await self.accept()
 
-    def disconnect(self, close_code):
+    async def disconnect(self, close_code):
         args = (self.room_group_name, self.channel_name,)
-        async_to_sync(self.channel_layer.group_discard)(*args)
+        await self.channel_layer.group_discard(*args)
 
-    def receive_json(self, content, **kwargs):
+    async def receive_json(self, content, **kwargs):
         message = f"{content['message']}"
         # message = f"{self.channel_name}: {content['message']}"         # show the unique channel name
 
@@ -28,15 +27,15 @@ class ChatConsumer(JsonWebsocketConsumer):
             "type": "chat.message",
             "message": message,
         }
-        async_to_sync(self.channel_layer.group_send)(self.room_group_name, args)
+        await self.channel_layer.group_send(self.room_group_name, args)
 
-    def chat_message(self, event):
+    async def chat_message(self, event):
         message = event["message"]
         content = {
             "message": message,
         }
 
-        self.send_json(content)
+        await self.send_json(content)
 
     def clean_group_name(self, room_name):
         # Group name must be a valid unicode string with length < 100 containing only ASCII alphanumerics, hyphens, underscores, or periods

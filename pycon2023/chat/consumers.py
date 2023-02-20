@@ -23,6 +23,11 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         message = f"{content['message']}"
         # message = f"{self.channel_name}: {content['message']}"         # show the unique channel name
 
+        user = self.scope['user']
+        username = user if not user.is_anonymous else "Anonymous"
+
+        message = f"{username}: {message}"
+
         args = {
             "type": "chat.message",
             "message": message,
@@ -31,6 +36,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
     async def chat_message(self, event):
         message = event["message"]
+
         content = {
             "message": message,
         }

@@ -21,4 +21,14 @@
             window.location.pathname = '{% url 'chat:index' %}' + roomName + '/';
         };
     </script>
+
+    <br>
+    {% if user.is_authenticated %}
+        Hello {{ user }}
+        <br>
+        <a href="{% url 'admin:logout' %}?next={{ request.get_full_path }}">Log out</a>
+    {% else %}
+        <a href="{% url 'admin:login' %}?next={{ request.get_full_path }}">Log in</a>
+    {% endif %}
+
 </body>

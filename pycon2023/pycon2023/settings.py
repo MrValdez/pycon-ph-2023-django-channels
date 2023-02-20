@@ -72,6 +72,8 @@ TEMPLATES = [
 WSGI_APPLICATION = 'pycon2023.wsgi.application'
 ASGI_APPLICATION = 'pycon2023.asgi.application'
 
+CELERY_BROKER_URL = 'redis://localhost:6379'
+
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",

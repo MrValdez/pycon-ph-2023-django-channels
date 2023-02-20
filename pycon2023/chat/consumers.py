@@ -13,6 +13,10 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         args = (self.room_group_name, self.channel_name,)
         await self.channel_layer.group_add(*args)
 
+        # global chat notification
+        args = ("chat_GLOBAL", self.channel_name,)
+        await self.channel_layer.group_add(*args)
+
         await self.accept()
 
     async def disconnect(self, close_code):

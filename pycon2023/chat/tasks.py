@@ -23,7 +23,7 @@ def get_chat_facts():
 
 @shared_task
 def send_chat_facts():
-    room_group_name = "chat_PyCon-PH-2023"
+    room_group_name = "chat_GLOBAL"
     args = {
         "type": "chat.message",
         "message": get_chat_facts(),

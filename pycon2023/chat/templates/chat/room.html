@@ -6,7 +6,7 @@
 <body>
     <h2>{{ room_name }}</h2>
 
-    <textarea id="chat-log" cols="100" rows="20"></textarea><br>
+    <textarea id="chat-log" cols="100" rows="20" readonly></textarea><br>
     {% if user.is_anonymous %}
         Anonymous:
     {% else %}
@@ -28,7 +28,10 @@
 
         chatSocket.onmessage = function(e) {
             const data = JSON.parse(e.data);
-            document.querySelector('#chat-log').value += (data.message + '\n');
+            var element = document.querySelector('#chat-log');
+            element.value += (data.message + '\n');
+            element.focus();
+            element.setSelectionRange(element.value.length, element.value.length);
         };
 
         chatSocket.onclose = function(e) {

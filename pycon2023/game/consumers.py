@@ -16,6 +16,9 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
 
         self.team = random.choice(teams)
 
+        self.player = None
+        self.update_player_db()
+
     async def connect(self):
         args = (self.team, self.channel_name,)
         await self.channel_layer.group_add(*args)
@@ -28,6 +31,7 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
         await self.channel_layer.group_discard(*args)
 
     async def receive_json(self, content, **kwargs):
+        await self.update_player_db(content["name"])
         tasks.play_move(self.team, content["move"])
 
         # Every time a message is receive by the server, it will then send a game state update back.
@@ -45,6 +49,8 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
     async def update(self):
         await self.update_game_state()
         await self.update_last_match_result()
+        await self.update_player_db()
+        await self.update_players()
 
     async def change_team(self):
         args = {
@@ -79,3 +85,53 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             },
         }
         await self.send_json(args)
+
+    async def update_player_db(self, player=None):
+        if self.team == "RED":
+            players = self.get_red_players()
+        else:
+            players = self.get_blue_players()
+
+        if player is None:
+            player = self.player
+
+        if player is None:
+            player = "Anonymous #" + str(random.randint(1, 999))
+
+        if player.strip() == "":
+            return
+
+        if player not in players:
+            key = f"game_{self.team}_PLAYERS"
+
+            if self.player:
+                redis_db.lrem(key, 1, self.player)
+
+            self.player = player
+            redis_db.rpush(key, player)
+
+    async def update_players(self):
+        args = {
+            "event": "UPDATE_PLAYERS",
+            "message": {
+                "RED_PLAYERS": self.get_red_players(),
+                "BLUE_PLAYERS": self.get_blue_players(),
+            }
+        }
+        await self.send_json(args)
+
+    def get_red_players(self):
+        if redis_db.exists("game_RED_PLAYERS"):
+            players = redis_db.lrange("game_RED_PLAYERS", 0, -1)
+
+            if players:
+                return players
+        return []
+
+    def get_blue_players(self):
+        if redis_db.exists("game_BLUE_PLAYERS"):
+            players = redis_db.lrange("game_BLUE_PLAYERS", 0, -1)
+
+            if players:
+                return players
+        return []

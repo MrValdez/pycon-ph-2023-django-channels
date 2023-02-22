@@ -8,7 +8,7 @@ Before the workshop starts, please familiarize yourself with Django. I would rec
 
 ## Clone the workshop's git
 
-$ git clone https://github.com/MrValdez/pycon-ph-2022-django-channels.git
+$ git clone https://github.com/MrValdez/pycon-ph-2022-django-channels.git  
 $ git checkout 001-initial-django
 
 
@@ -24,14 +24,14 @@ You can install redis either via docker or bare metal. To install with docker, u
 
 $ docker run -d --name redis -p 6379:6379 -p 8001:8001 redis:latest
 
-Alternatively, you can install to your OS. Instructions can be found on this link: https://redis.io/docs/getting-started/installation/
+Alternatively, you can install directly to your OS. Instructions can be found on this link: https://redis.io/docs/getting-started/installation/
 
 Running redis natively can be done with this command line:
 
 $ sudo service redis-server start
 
 
-## Check Redis is working
+## Check that Redis is working
 To check if Redis have been installed correctly, you can run redis-cli and send a ping command.
 
 $ redis-cli
@@ -48,7 +48,7 @@ PONG
 
 ## Run Celery
 
-$ celery -A pycon2023 worker -l INFO
+$ celery -A pycon2023 worker -l INFO  
 $ celery -A pycon2023 beat -l INFO
 
 (note: under windows, add -P solo)
@@ -56,6 +56,6 @@ $ celery -A pycon2023 beat -l INFO
 
 ## Stock images used
 
-Rock paper scissors image taken from: https://www.shutterstock.com/image-vector/rock-paper-scissors-icon-set-vector-1804156864
-Loading gif image taken from: https://icon-library.com/icon/loading-icon-animated-gif-19.html
+Rock paper scissors image taken from: https://www.shutterstock.com/image-vector/rock-paper-scissors-icon-set-vector-1804156864  
+Loading gif image taken from: https://icon-library.com/icon/loading-icon-animated-gif-19.html  
 Loading static image taken from: https://www.vectorstock.com/royalty-free-vector/loading-icon-load-load-icon-white-background-vector-26979388

@@ -7,6 +7,8 @@ from celery import shared_task
 from django.conf import settings
 from redis import Redis
 
+import random
+
 
 channel_layer = get_channel_layer()
 redis_db = Redis(*settings.REDIS_URL, decode_responses=True)
@@ -15,11 +17,45 @@ teams = ["RED", "BLUE"]
 max_timer = 10
 
 
+def check_winner(red, blue):
+    # rock (0), paper (1), scissors (2)
+
+    if red == blue:
+        return "TIE"
+    elif ((red + 1) % 3) == blue:
+        return "BLUE"
+    else:
+        return "RED"
+
 @shared_task
 def update_game_tick():
     current_timer = redis_db.decr("game_TIMER")
 
     if current_timer <= 0:
+        def get_highest_vote(team):
+            rock_vote, paper_vote, scissors_vote = get_votes(team)
+            choices = []
+
+            highest = max([rock_vote, paper_vote, scissors_vote])
+            if rock_vote == highest:
+                choices.append(0)
+            if paper_vote == highest:
+                choices.append(1)
+            if scissors_vote == highest:
+                choices.append(2)
+
+            return random.choice(choices)
+
+        red = get_highest_vote("RED")
+        blue = get_highest_vote("BLUE")
+        winner = check_winner(red, blue)
+
+        names = ["ROCK", "PAPER", "SCISSORS"]
+
+        redis_db.set("LAST_MATCH_RED", names[red])
+        redis_db.set("LAST_MATCH_BLUE", names[blue])
+        redis_db.set("LAST_MATCH_WINNER", winner)
+
         game_reset()
 
     send_game_state()

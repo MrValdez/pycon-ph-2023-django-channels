@@ -1,8 +1,13 @@
 import random
 
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
+from django.conf import settings
+from redis import Redis
 from .tasks import teams
 from . import tasks
+
+
+redis_db = Redis(*settings.REDIS_URL, decode_responses=True)
 
 
 class GameConsumer(AsyncJsonWebsocketConsumer):
@@ -39,6 +44,7 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
 
     async def update(self):
         await self.update_game_state()
+        await self.update_last_match_result()
 
     async def change_team(self):
         args = {
@@ -55,4 +61,21 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
             "message": game_state,
         }
 
+        await self.send_json(args)
+
+    async def update_last_match_result(self):
+        winner_text = redis_db.get("LAST_MATCH_WINNER")
+        if winner_text not in ("RED", "BLUE"):
+            winner_text = "BOTH TIED!"
+        else:
+            winner_text = winner_text + " won!"
+
+        args = {
+            "event": "UPDATE_LAST_MATCH_RESULTS",
+            "message": {
+                "LAST_MATCH_RED": redis_db.get("LAST_MATCH_RED"),
+                "LAST_MATCH_BLUE": redis_db.get("LAST_MATCH_BLUE"),
+                "WINNER_TEXT": winner_text,
+            },
+        }
         await self.send_json(args)

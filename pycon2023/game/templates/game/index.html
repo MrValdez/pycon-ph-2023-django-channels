@@ -177,12 +177,12 @@ Instructions:
         }
 
         function EVENT_update_game(data) {
+            document.querySelector('#timer').max = data.message["MAX_TIMER"];
+            document.querySelector('#timer').value = parseInt(data.message["TIMER"]);
+
             document.querySelector('#votes-rock').value = data.message["ROCK_VOTE"];
             document.querySelector('#votes-paper').value = data.message["PAPER_VOTE"];
             document.querySelector('#votes-scissors').value = data.message["SCISSORS_VOTE"];
-
-            document.querySelector('#timer').max = data.message["MAX_TIMER"];
-            document.querySelector('#timer').value = parseInt(data.message["TIMER"]) - 1;
         }
     </script>
 

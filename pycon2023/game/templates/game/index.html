@@ -1,0 +1,192 @@
+{% load static %}
+<!DOCTYPE html>
+
+<head>
+    <meta charset="utf-8"/>
+    <title>Game room #1</title>
+</head>
+
+<body>
+
+
+<center>
+<table border="1px solid" width="90%">
+    <tr>
+        <td colspan=2>
+            Last match results:
+            <center><h1><div id="outcome">Tied!</div></h1>
+        </td>
+    </tr>
+    <tr>
+        <td width="50%" bgcolor="#FFA07A">
+            <center>
+                <img src="{% static 'load.gif' %}" id="red-choice" width="200px" height="200px" /></div>
+            <hr>
+            Players: <em><span id="red-players"></div></em>
+        </td>
+        <td width="50%" bgcolor="#89CFF0">
+            <center>
+                <img src="{% static 'load.gif' %}" id="blue-choice" width="200px" height="200px" /></div>
+            </center>
+            <hr>
+            Players: <em><span id="blue-players"></div></em>
+        </td>
+    </tr>
+</table>
+</center>
+
+<div>
+
+<hr>
+
+<div id="team-info">
+<h1>
+    You are team <span id="player-team">(randomly selecting) Red or Blue</span>
+</h1>
+</div>
+
+<hr>
+
+<div>
+    <img src="{% static 'rock.png' %}" width="40px" height="40px"  />
+    Rock: <progress id="votes-rock" value="0" max="100"></progress>
+    <img src="{% static 'paper.png' %}" width="40px" height="40px"  />
+    Paper: <progress id="votes-paper" value="0" max="100"></progress>
+    <img src="{% static 'scissors.png' %}" width="40px" height="40px"  />
+    Scissor: <progress id="votes-scissors" value="0" max="100"></progress>
+    <progress id="timer" value="0" max="100" style="width:100%"></progress>
+</div>
+
+<br>
+<div>
+    What name do you want to identify with?
+    <input id="player-name-input" type="text" size="12" value="Anonymous"><br>
+</div>
+
+<br>
+<div>
+    Choose your weapon:
+    <input id="play-rock" type="button" value="Rock!">
+    <input id="play-paper" type="button" value="Paper!">
+    <input id="play-scissors" type="button" value="Scissors!">
+</div>
+
+<br><br>
+<hr>
+Instructions:
+<p>0. You will be randomly assigned a team, eiher team Red or team Blue</p>
+<p>1. Choose an option your team will play</p>
+<p>2. When the timer ends, the majority is checked. That play is sent.</p>
+<p>3. ???</p>
+<p>4. Go back to step 1</p>
+<hr>
+
+    <script>
+        var player_name_box = document.querySelector('#player-name-input');
+        player_name_box.focus();
+        player_name_box.value = "";
+
+        const socket = new WebSocket(
+            'ws://'
+            + window.location.host
+            + '/ws/game/'
+        );
+
+        socket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+
+            switch(data.event)
+            {
+                case "CHANGE_TEAM":
+                    EVENT_change_team(data);
+                    break;
+
+                case "UPDATE_PLAYERS":
+                    EVENT_update_players(data);
+                    break;
+
+                case "UPDATE_LAST_MATCH_RESULTS":
+                    EVENT_update_last_match_result(data);
+                    break;
+
+                case "UPDATE_GAME":
+                    EVENT_update_game(data);
+                    break;
+            }
+        };
+
+        socket.onclose = function(e) {
+            console.error('Chat socket closed unexpectedly');
+        };
+
+        document.querySelector('#play-rock').onclick = function(e) {
+            send_move("rock")
+        }
+
+        document.querySelector('#play-paper').onclick = function(e) {
+            send_move("paper")
+        }
+
+        document.querySelector('#play-scissors').onclick = function(e) {
+            send_move("scissors")
+        }
+        
+        function send_move(move) {
+            const playerName = document.querySelector('#player-name-input').value;
+            socket.send(JSON.stringify({
+                "name": playerName,
+                "move": move
+            }));
+        };
+
+        function EVENT_change_team(data) {
+            var element = document.querySelector('#player-team');
+            element.textContent = data.message;
+
+            var element = document.querySelector('#team-info');
+            switch(data.message)
+            {
+                case "BLUE":
+                    element.style.backgroundColor = "#89CFF0";
+                    break;
+                case "RED":
+                    element.style.backgroundColor = "#FFA07A";
+                    break;
+            }
+        }
+
+        function EVENT_update_players(data) {
+            document.querySelector('#red-players').textContent = data.message["RED_PLAYERS"].join(", ");
+            document.querySelector('#blue-players').textContent = data.message["BLUE_PLAYERS"].join(", ");
+        }
+
+        function EVENT_update_last_match_result(data) {
+            function get_image(move) {
+                switch (move)
+                {
+                    case "ROCK":    return "{% static 'rock.png' %}";
+                    case "PAPER":   return "{% static 'paper.png' %}";
+                    case "SCISSORS": return "{% static 'scissors.png' %}";
+                    default:        return "{% static 'load.png' %}";
+                }
+            }
+
+            document.querySelector('#red-choice').src = get_image(data.message["LAST_MATCH_RED"]);
+            document.querySelector('#blue-choice').src = get_image(data.message["LAST_MATCH_BLUE"]);
+            document.querySelector('#outcome').textContent = data.message["WINNER_TEXT"];
+        }
+
+        function EVENT_update_game(data) {
+            document.querySelector('#votes-rock').value = data.message["ROCK_VOTE"];
+            document.querySelector('#votes-paper').value = data.message["PAPER_VOTE"];
+            document.querySelector('#votes-scissors').value = data.message["SCISSORS_VOTE"];
+
+            document.querySelector('#timer').max = data.message["MAX_TIMER"];
+            document.querySelector('#timer').value = parseInt(data.message["TIMER"]) - 1;
+        }
+    </script>
+
+    <br>
+
+<em>Image taken from: https://www.shutterstock.com/image-vector/rock-paper-scissors-icon-set-vector-1804156864</em>
+</body>

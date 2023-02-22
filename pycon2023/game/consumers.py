@@ -1,6 +1,7 @@
 import random
 
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
+from better_profanity import profanity
 from django.conf import settings
 from redis import Redis
 from .tasks import teams
@@ -8,6 +9,7 @@ from . import tasks
 
 
 redis_db = Redis(*settings.REDIS_URL, decode_responses=True)
+profanity.load_censor_words()
 
 
 class GameConsumer(AsyncJsonWebsocketConsumer):
@@ -100,6 +102,8 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
 
         if player.strip() == "":
             return
+
+        player = profanity.censor(player)
 
         if player not in players:
             key = f"game_{self.team}_PLAYERS"

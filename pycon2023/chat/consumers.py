@@ -1,6 +1,9 @@
 import json
 
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
+from better_profanity import profanity
+
+profanity.load_censor_words()
 
 
 class ChatConsumer(AsyncJsonWebsocketConsumer):
@@ -40,6 +43,7 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
     async def chat_message(self, event):
         message = event["message"]
+        message = profanity.censor(message)
 
         content = {
             "message": message,
@@ -49,6 +53,8 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
     def clean_group_name(self, room_name):
         # Group name must be a valid unicode string with length < 100 containing only ASCII alphanumerics, hyphens, underscores, or periods
+        if profanity.contains_profanity(room_name):
+            return "Jail"
 
         room_name = room_name[:100]
         for symbol in " !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~":

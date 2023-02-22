@@ -121,6 +121,10 @@ def game_reset():
         for key in keys:
             redis_db.set(key, 1)
 
+    for team in teams:
+        key = f"game_{team}_PLAYERS"
+        redis_db.delete(key)
+
     redis_db.set("game_TIMER", max_timer)
 
 

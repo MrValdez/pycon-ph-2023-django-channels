@@ -13,6 +13,10 @@ app.conf.beat_schedule = {
     "chat_facts": {
         "task": "chat.tasks.send_chat_facts",
         "schedule": timedelta(seconds=3),
+    },
+    "game": {
+        "task": "game.tasks.update_game_tick",
+        "schedule": timedelta(seconds=1),
     }
 }
 

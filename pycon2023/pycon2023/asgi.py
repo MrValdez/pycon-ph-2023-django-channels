@@ -15,6 +15,7 @@ from channels.security.websocket import AllowedHostsOriginValidator
 from django.core.asgi import get_asgi_application
 
 import chat.routing
+import game.routing
 
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'pycon2023.settings')
@@ -24,6 +25,11 @@ django_application = get_asgi_application()
 application = ProtocolTypeRouter({
     "http": django_application,
     "websocket": AllowedHostsOriginValidator(
-        AuthMiddlewareStack(URLRouter(chat.routing.urlpatterns))
+        AuthMiddlewareStack(
+            URLRouter(
+                chat.routing.urlpatterns +
+                game.routing.urlpatterns
+            )
+        ),
     ),
 })

@@ -24,15 +24,35 @@ def update_game_tick():
 
     send_game_state()
 
+def play_move(team, move):
+    key = f"game_{team}_{move.upper()}"
+    redis_db.incr(key)
+
+def get_votes(team):
+    rock_vote = redis_db.get(f"game_{team}_ROCK")
+    rock_vote = int(rock_vote) if rock_vote else 0
+
+    paper_vote = redis_db.get(f"game_{team}_PAPER")
+    paper_vote = int(paper_vote) if paper_vote else 0
+
+    scissors_vote = redis_db.get(f"game_{team}_SCISSORS")
+    scissors_vote = int(scissors_vote) if scissors_vote else 0
+
+    return rock_vote, paper_vote, scissors_vote
 
 def get_game_state(team):
+    rock_vote, paper_vote, scissors_vote = get_votes(team)
+    total_votes = max((rock_vote + paper_vote + scissors_vote), 1)
+
     current_timer = redis_db.get("game_TIMER")
 
     game_state = {
+        "ROCK_VOTE": rock_vote / total_votes * 100,
+        "PAPER_VOTE": paper_vote / total_votes * 100,
+        "SCISSORS_VOTE": scissors_vote / total_votes * 100,
         "TIMER": current_timer,
         "MAX_TIMER": max_timer,
     }
-    print(game_state)
 
     return game_state
 
@@ -54,6 +74,16 @@ def send_game_state():
 
 def game_reset():
     print("Restarting game")
+
+    for team in teams:
+        keys = [
+            f"game_{team}_ROCK",
+            f"game_{team}_PAPER",
+            f"game_{team}_SCISSORS",
+        ]
+
+        for key in keys:
+            redis_db.set(key, 1)
 
     redis_db.set("game_TIMER", max_timer)
 

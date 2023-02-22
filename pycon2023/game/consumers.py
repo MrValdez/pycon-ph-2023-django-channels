@@ -23,7 +23,12 @@ class GameConsumer(AsyncJsonWebsocketConsumer):
         await self.channel_layer.group_discard(*args)
 
     async def receive_json(self, content, **kwargs):
-        pass
+        tasks.play_move(self.team, content["move"])
+
+        # Every time a message is receive by the server, it will then send a game state update back.
+        # For some games/app, this might use up too much bandwidth. But it helps with responsiveness.
+        # As a developer, it's up to you to find the balance.
+        await self.update()
 
     async def setup(self):
         await self.change_team()

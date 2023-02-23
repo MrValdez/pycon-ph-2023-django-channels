@@ -4,6 +4,7 @@ async-timeout==4.0.2
 attrs==22.2.0
 autobahn==23.1.2
 Automat==22.10.0
+better-profanity==0.7.0
 billiard==3.6.4.0
 celery==5.2.7
 cffi==1.15.1

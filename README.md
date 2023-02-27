@@ -1,4 +1,4 @@
-# pycon-ph-2022-django-channels
+# pycon-ph-2023-django-channels
 
 
 ## Fundamental Git and Django knowledge needed
@@ -8,7 +8,7 @@ Before the workshop starts, please familiarize yourself with Django. I would rec
 
 ## Clone the workshop's git
 
-$ git clone https://github.com/MrValdez/pycon-ph-2022-django-channels.git  
+$ git clone https://github.com/MrValdez/pycon-ph-2023-django-channels.git  
 $ git checkout 001-initial-django
 
 
